@@ -1,0 +1,43 @@
+services:
+  backend:
+    build: ./backend
+    container_name: capstone-backend
+    ports:
+      - "5000:5000"
+    environment:
+      - DB_HOST=db
+      - DB_NAME=capstone
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+    depends_on:
+      - db
+    networks:
+      - capstone-net
+
+  frontend:
+    build: ./frontend
+    container_name: capstone-frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    networks:
+      - capstone-net
+
+  db:
+    image: postgres:15
+    container_name: capstone-db
+    environment:
+      POSTGRES_DB: capstone
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - capstone-net
+
+networks:
+  capstone-net:
+
+volumes:
+  pgdata:
