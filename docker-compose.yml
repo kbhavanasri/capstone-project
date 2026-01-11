@@ -1,38 +1,41 @@
+version: "3.9"
+
 services:
-  backend:
-    build: ./backend
-    container_name: capstone-backend
-    ports:
-      - "5000:5000"
+  db:
+    image: postgres:14
+    container_name: capstone-db
     environment:
-      - DB_HOST=db
-      - DB_NAME=capstone
-      - DB_USER=postgres
-      - DB_PASSWORD=postgres
+      POSTGRES_DB: capstone
+      POSTGRES_USER: capstone_user
+      POSTGRES_PASSWORD: capstone_pass
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - capstone-net
+
+  backend:
+    build:
+      context: ./backend
+      args:
+        USERNAME: capstone_user  # optional: only if your Dockerfile uses ARG USERNAME
+    container_name: capstone-backend
     depends_on:
       - db
+    environment:
+      DATABASE_URL: postgresql://capstone_user:capstone_pass@db:5432/capstone
+    ports:
+      - "5000:5000"
     networks:
       - capstone-net
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
     container_name: capstone-frontend
     ports:
       - "8080:80"
     depends_on:
       - backend
-    networks:
-      - capstone-net
-
-  db:
-    image: postgres:15
-    container_name: capstone-db
-    environment:
-      POSTGRES_DB: capstone
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-    volumes:
-      - pgdata:/var/lib/postgresql/data
     networks:
       - capstone-net
 
